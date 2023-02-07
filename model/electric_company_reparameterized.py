@@ -6,10 +6,12 @@ from primitives import my_sample
 import numpyro
 from numpyro.infer.reparam import TransformReparam
 
-def logsigmoid(x):
-    return jnp.where(x > 0, -jnp.log(1. + jnp.exp(-x)), x - jnp.log (jnp.exp(x) + 1))
 class ElectricCompanyReparameterized:
-    lamb0 = 10.
+
+    """
+        Electric company model with reparameterization implemented with scalars
+    """
+
     def __init__(self):
         self.N = N
         self.n_pair = n_pair
@@ -37,13 +39,11 @@ class ElectricCompanyReparameterized:
 
         aa = []
         for i in range(self.n_pair):
-            #a_base = my_sample('a{}'.format(str(i)),dist.Normal(0., 1.))
             with numpyro.handlers.reparam(config={'a{}'.format(str(i)): TransformReparam()}):
                 a = numpyro.sample(
                     'a{}'.format(str(i)),
                     dist.TransformedDistribution(dist.Normal(0., 1.),
                                                  dist.transforms.AffineTransform(100. * muas[self.grade_pair[i]-1], 1.)))
-                #a = 100. * muas[self.grade_pair[i]-1] + a_base
                 aa.append(a)
 
         bs = []

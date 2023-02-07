@@ -4,6 +4,10 @@ import jax.numpy as jnp
 from primitives import my_sample
 
 class LinearSSM:
+    """
+        A simple linear state space model
+    """
+
     y1 = jnp.array(1.)
     y2 = jnp.array(2.)
     y3 = jnp.array(3.)

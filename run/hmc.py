@@ -9,15 +9,18 @@ import numpy as np
 from utils import PythonLiteralOption
 from time import time
 
+"""
+    TODO: use Arviz to evaluate multiple chains
+"""
+
 @click.command()
 @click.option('--model', default='EightSchools', help = 'The Model to Perform Inference')
-@click.option('--warm_up_steps', default=10000)
-@click.option('--sample_steps', default=100000)
+@click.option('--warm_up_steps', default=10000, help = 'Number of warm up samples in HMC')
+@click.option('--sample_steps', default=100000, help = 'Number of samples in HMC')
 @click.option('--rng_key', default=0)
 @click.option('--plot', is_flag=True)
-@click.option('--model_parameters', cls=PythonLiteralOption, default='{}', help = 'The parameters that feed into model construction')
-@click.option('--algorithm', default='NUTS', help = 'The MCMC algorithm of Numpyro to use')
-
+@click.option('--model_parameters', cls=PythonLiteralOption, default='{}', help = 'The parameters as a dictionary that feed into model construction')
+@click.option('--algorithm', default='NUTS', help = 'The MCMC algorithm of Numpyro to use. Choose from [\'NUTS\', \'HMC\']')
 def main(model, warm_up_steps, sample_steps,rng_key,plot,model_parameters, algorithm):
     parameter_settings = '_'.join(model_parameters.values())
     if not os.path.exists('result'):

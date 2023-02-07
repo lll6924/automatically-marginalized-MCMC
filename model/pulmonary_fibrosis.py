@@ -8,7 +8,13 @@ from jax import random
 from numpyro.infer import Predictive
 
 class PulmonaryFibrosis:
+    """
+        Pulmonary fibrosis model (implemented with scalars) from https://num.pyro.ai/en/latest/tutorials/bayesian_hierarchical_linear_regression.html
+    """
     def __init__(self, drop=1000):
+        """
+            Due to slow compilation with JAX, we drop 1000 data points
+        """
         self.train = pd.read_csv(
             "https://gist.githubusercontent.com/ucals/"
             "2cf9d101992cb1b78c2cdd6e3bac6a4b/raw/"

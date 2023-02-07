@@ -6,16 +6,16 @@ import sys
 sys.setrecursionlimit(10000)
 
 @click.command()
-@click.option('--model', default='EightSchools', help = 'The Model to Perform Inference.')
-@click.option('--warm_up_steps', default=10000)
-@click.option('--sample_steps', default=100000)
+@click.option('--model', default='EightSchools', help = 'The Model to Perform Inference. See classes under model/ for details')
+@click.option('--warm_up_steps', default=10000, help = 'Number of warm up samples in HMC')
+@click.option('--sample_steps', default=100000, help = 'Number of samples in HMC')
 @click.option('--rng_key', default=0)
 @click.option('--protected', cls=PythonLiteralOption, default='[]', help = 'The variables that should not be marginalized')
-@click.option('--model_parameters', cls=PythonLiteralOption, default='{}', help = 'The parameters that feed into model construction')
-@click.option('--algorithm', default='NUTS', help = 'The MCMC algorithm of Numpyro to use')
+@click.option('--model_parameters', cls=PythonLiteralOption, default='{}', help = 'The parameters as a dictionary that feed into model construction')
+@click.option('--algorithm', default='NUTS', help = 'The MCMC algorithm of Numpyro to use. Choose from [\'NUTS\', \'HMC\']')
 @click.option('--plot', is_flag=True)
-@click.option('--just_compile', is_flag=True)
-@click.option('--no_marginalization', is_flag=True)
+@click.option('--just_compile', is_flag=True, help = 'If flagged, the number of Jaxprs will be reported')
+@click.option('--no_marginalization', is_flag=True, help = 'If flagged, automatic marginalization will not be performed')
 def main(model, warm_up_steps, sample_steps, rng_key, protected, model_parameters, algorithm, plot, just_compile,no_marginalization):
     print('Protected variables:', protected)
     if not os.path.exists('result'):

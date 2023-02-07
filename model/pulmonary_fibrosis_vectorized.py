@@ -9,6 +9,9 @@ from jax import random
 from numpyro.infer import Predictive
 
 class PulmonaryFibrosisVectorized(PulmonaryFibrosis):
+    """
+        Pulmonary fibrosis model from https://num.pyro.ai/en/latest/tutorials/bayesian_hierarchical_linear_regression.html
+    """
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 

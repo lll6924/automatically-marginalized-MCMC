@@ -3,9 +3,12 @@ from jax import numpy as jnp
 import numpyro.distributions as dist
 from primitives import my_sample
 
-def logsigmoid(x):
-    return jnp.where(x > 0, -jnp.log(1. + jnp.exp(-x)), x - jnp.log (jnp.exp(x) + 1))
 class ElectricCompany:
+
+    """
+        Electric company model implemented with scalars
+    """
+
     lamb0 = 10.
     def __init__(self):
         self.N = N

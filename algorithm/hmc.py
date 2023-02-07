@@ -4,9 +4,17 @@ import jax.numpy as jnp
 from numpyro.diagnostics import print_summary, effective_sample_size
 from jax import device_get
 from jax.lax import fori_loop
+
+
 def hmc(log_prob, init_params, all_latent_dims, postprocess = None, recover = None,
         result_file = 'result', plot = False, warm_up_steps = 10000, sample_steps = 100000, rng_key = 0,
         algorithm = 'NUTS'):
+
+    """
+        Call NumPyro's HMC given a log density function, and recover with a recovery function
+        TODO: use Arviz to evaluate multiple chains
+    """
+
     def potential(x):
         return -log_prob(x)
     post_rng_key, rng_key = random.split(random.PRNGKey(rng_key))

@@ -9,7 +9,7 @@ class EightSchoolsReparameterized:
     y = jnp.array([28.0, 8.0, -3.0, 7.0, -1.0, 1.0, 18.0, 12.0])
     sigma = jnp.array([15.0, 10.0, 16.0, 11.0, 9.0, 11.0, 10.0, 18.0])
 
-    # Eight Schools example
+    # Eight Schools example with reparameterization
     def model(self, sigma, obs = None):
         mu = my_sample('mu', dist.Normal(0, 5))
         tau = my_sample('tau', dist.HalfCauchy(5))

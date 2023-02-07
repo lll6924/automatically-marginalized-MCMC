@@ -71,6 +71,9 @@ def operator_map(operator):
     return operator
 
 def update_callable(result, arguments, eqn):
+    """
+        Define a new computation graph based on an operation over current computation graph
+    """
     ins = [a.value for a in arguments]
     def fun(index, *args, **kwargs):
         if result[index].name in kwargs['stored'].keys():
@@ -103,7 +106,12 @@ def update(result, operator, arguments, params = None, eqn = None):
             r.value = r.substitute
 
 
-def is_linear(v1, v2, stored): # whether v1 is linear w.r.t. v2
+def is_linear(v1, v2, stored):
+    """
+        Linearity detection
+        Return: (whether the coefficient is positive, whether the intercept is positive, whether v1 is linear w.r.t. v2), stored
+        stored: a dictionary to store intermediate results with the same v2. This trick is crucial for large models.
+    """
     if v1.name in stored.keys():
         return stored[v1.name], stored
     if v1 == v2:
@@ -149,6 +157,11 @@ def is_linear(v1, v2, stored): # whether v1 is linear w.r.t. v2
     return stored[v1.name], stored
 
 def linear(v1, v2, stored):
+    """
+        Linear coefficient and intercept extraction
+        Return: (coefficient, intercept), stored
+        stored: a dictionary to store intermediate results with the same v2. This trick is crucial for large models.
+    """
     if v1.name in stored.keys():
         return stored[v1.name], stored
     if v1 == v2:
@@ -265,6 +278,11 @@ def linear(v1, v2, stored):
 
 
 def is_dependent(v1, v2, stored):
+    """
+        Dependency detection
+        Return: whether or not v1 is dependent on v2, stored
+        stored: a dictionary to store intermediate results with the same v2. This trick is crucial for large models.
+    """
     if v1.name in stored.keys():
         return stored[v1.name], stored
     if v1 == v2:

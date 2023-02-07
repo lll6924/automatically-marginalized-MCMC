@@ -4,7 +4,16 @@ from dataset.repeated_binary_trials import get_repeated_binary_trials_data
 from primitives import my_sample
 
 class HierarchicalPartialPooling:
+
+    """
+        Hierarchical partial pooling model for binary repeated trials
+        See https://mc-stan.org/users/documentation/case-studies/pool-binary-trials.html
+    """
+
     def __init__(self, dataset = 'baseball_small'):
+        """
+            dataset: the name of the dataset. Choose from ['baseball_small', 'baseball_large', 'rat_tumors']
+        """
         self.x, self.y, self.test_x, self.test_y = get_repeated_binary_trials_data(dataset)
         self.N = len(self.x)
 

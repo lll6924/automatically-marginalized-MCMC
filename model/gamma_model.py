@@ -1,9 +1,13 @@
-import numpyro
 import numpyro.distributions as dist
 import jax.numpy as jnp
 from primitives import my_sample
 
 class GammaModel:
+
+    """
+        A model to test the case for Gamma conjugacy
+    """
+
     def model(self, x3 = None, x4 = None):
         x1 = my_sample('x1', dist.Normal(0, 5))
         x2 = my_sample('x2', dist.Gamma(jnp.exp(x1), 1.))

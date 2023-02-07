@@ -4,6 +4,9 @@ import jax.numpy as jnp
 from primitives import my_sample
 
 class TMP:
+    """
+        The example model in Appendix F
+    """
     def __init__(self, N=100):
         self.N = int(N)
     def model(self, y = None):

@@ -4,6 +4,12 @@ import jax.numpy as jnp
 import jax.scipy as jsc
 from rule import Variable
 
+"""
+    This file defines the distribution families in this project as classes.
+    For each family, a function `get_parameters` is used for extracting its parameter variables from Jaxprs.
+    The extraction of parameters is sensitive to the version of JAX and NumPyro. Make sure you use JAX==0.4.1 and NumPyro=0.10.1.
+"""
+
 class MyNormal:
     @staticmethod
     def get_parameters(pred, rv):

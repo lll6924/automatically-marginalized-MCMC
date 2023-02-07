@@ -10,6 +10,9 @@ from numpyro.infer import Predictive
 from numpyro.infer.reparam import TransformReparam
 
 class PulmonaryFibrosisReparameterized(PulmonaryFibrosis):
+    """
+        Pulmonary fibrosis model with reparameterization from https://num.pyro.ai/en/latest/tutorials/bayesian_hierarchical_linear_regression.html
+    """
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
