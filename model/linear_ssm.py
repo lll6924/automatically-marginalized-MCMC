@@ -2,8 +2,9 @@ import numpyro
 import numpyro.distributions as dist
 import jax.numpy as jnp
 from primitives import my_sample
+from model import Model
 
-class LinearSSM:
+class LinearSSM(Model):
     """
         A simple linear state space model
     """

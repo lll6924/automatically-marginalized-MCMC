@@ -3,8 +3,9 @@ import numpyro.distributions as dist
 import jax.numpy as jnp
 from primitives import my_sample
 from numpyro.infer.reparam import TransformReparam
+from model import Model
 
-class EightSchoolsReparameterized:
+class EightSchoolsReparameterized(Model):
     J = 8
     y = jnp.array([28.0, 8.0, -3.0, 7.0, -1.0, 1.0, 18.0, 12.0])
     sigma = jnp.array([15.0, 10.0, 16.0, 11.0, 9.0, 11.0, 10.0, 18.0])

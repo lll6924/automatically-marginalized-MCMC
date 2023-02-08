@@ -2,8 +2,9 @@ from dataset.electric import *
 from jax import numpy as jnp
 import numpyro.distributions as dist
 from primitives import my_sample
+from model import Model
 
-class ElectricCompany:
+class ElectricCompany(Model):
 
     """
         Electric company model implemented with scalars

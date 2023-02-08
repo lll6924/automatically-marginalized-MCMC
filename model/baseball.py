@@ -3,8 +3,10 @@ import numpyro.distributions as dist
 from numpyro.examples.datasets import BASEBALL, load_dataset
 import jax.numpy as jnp
 from primitives import my_sample
+from model import Model
 
-class Baseball:
+
+class Baseball(Model):
 
     """
         Partially pooled model for Baseball problem

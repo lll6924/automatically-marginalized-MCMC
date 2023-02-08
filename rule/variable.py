@@ -11,6 +11,12 @@ def zero_fun(*args, **kwargs):
 def one_fun(*args, **kwargs):
     return 1., kwargs['stored']
 
+def random_name():
+    name = ''.join(random.choice(string.digits) for _ in range(10))
+    while name in Variable.all.keys():
+        name = ''.join(random.choice(string.digits) for _ in range(10))
+    return name
+
 class Variable:
     idCounter = 0
     all = {}
@@ -22,7 +28,7 @@ class Variable:
                  dependency = None
                  ):
         if name is None:
-            name = self.random_name()
+            name = random_name()
         self.name = name
         Variable.all[name] = self
         self.is_determinstic = determinstic
@@ -47,23 +53,16 @@ class Variable:
             self.result = kwargs['substitute'][name]
             return self.result, kwargs['stored']
         self.substitute = substitute
+        self.parameters = tuple()
 
-        self.mean = None
-        self.std = None
-        self.scale = None
-        self.alpha = None
-        self.beta = None
-        self.lamb = None
-        self.cg_alpha = None
-        self.cg_beta = None
-        self.cg_q = None
-        self.cnt = None
+    def get_parameters(self, substitute, stored):
+        tup = tuple()
+        for e in self.parameters:
+            v, stored = e.value(substitute=substitute, stored = stored)
+            tup = tup + (v,)
+        return tup, stored
 
-    def random_name(self):
-        name = ''.join(random.choice(string.digits) for _ in range(10))
-        while name in self.all.keys():
-            name = ''.join(random.choice(string.digits) for _ in range(10))
-        return name
+
 
 def operator_map(operator):
     if operator in ['or']:

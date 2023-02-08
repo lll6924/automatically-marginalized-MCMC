@@ -5,8 +5,9 @@ import numpyro.distributions as dist
 from primitives import my_sample
 import numpyro
 from numpyro.infer.reparam import TransformReparam
+from model import Model
 
-class ElectricCompanyReparameterized:
+class ElectricCompanyReparameterized(Model):
 
     """
         Electric company model with reparameterization implemented with scalars

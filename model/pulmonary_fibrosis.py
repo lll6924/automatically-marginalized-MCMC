@@ -6,8 +6,9 @@ import numpyro
 from sklearn.preprocessing import LabelEncoder
 from jax import random
 from numpyro.infer import Predictive
+from model import Model
 
-class PulmonaryFibrosis:
+class PulmonaryFibrosis(Model):
     """
         Pulmonary fibrosis model (implemented with scalars) from https://num.pyro.ai/en/latest/tutorials/bayesian_hierarchical_linear_regression.html
     """

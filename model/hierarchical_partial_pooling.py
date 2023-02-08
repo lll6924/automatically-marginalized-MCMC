@@ -2,8 +2,9 @@ import numpyro
 import numpyro.distributions as dist
 from dataset.repeated_binary_trials import get_repeated_binary_trials_data
 from primitives import my_sample
+from model import Model
 
-class HierarchicalPartialPooling:
+class HierarchicalPartialPooling(Model):
 
     """
         Hierarchical partial pooling model for binary repeated trials

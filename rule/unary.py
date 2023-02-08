@@ -10,68 +10,36 @@ def xla_call(result, arguments, params): # other xla_calls are already dealt wit
         return result[0].result, kwargs['stored']
     result[0].value = fun
 
-def tan(result, arguments, params):
-    assert(len(result) == 1 and len(arguments) == 1)
+def unary_rule_helper(result, arguments, params, f):
+    assert (len(result) == 1 and len(arguments) == 1)
     i = arguments[0]
     o = result[0]
+
     def fun(*args, **kwargs):
         if o.name in kwargs['stored'].keys():
             return kwargs['stored'][o.name], kwargs['stored']
         i1_val, kwargs['stored'] = i.value(*args, **kwargs)
-        o.result = jnp.tan(i1_val)
+        o.result = f(i1_val)
         kwargs['stored'][o.name] = o.result
         return o.result, kwargs['stored']
     o.value = fun
+
+def tan(result, arguments, params):
+    return unary_rule_helper(result, arguments, params, jnp.tan)
 
 def abs(result, arguments, params):
-    assert(len(result) == 1 and len(arguments) == 1)
-    i = arguments[0]
-    o = result[0]
-    def fun(*args, **kwargs):
-        if o.name in kwargs['stored'].keys():
-            return kwargs['stored'][o.name], kwargs['stored']
-        i1_val, kwargs['stored'] = i.value(*args, **kwargs)
-        o.result = jnp.abs(i1_val)
-        kwargs['stored'][o.name] = o.result
-        return o.result, kwargs['stored']
-    o.value = fun
+    return unary_rule_helper(result, arguments, params, jnp.abs)
+
 
 def inv(result, arguments, params):
-    assert(len(result) == 1 and len(arguments) == 1)
-    i = arguments[0]
-    o = result[0]
-    def fun(*args, **kwargs):
-        if o.name in kwargs['stored'].keys():
-            return kwargs['stored'][o.name], kwargs['stored']
-        i1_val, kwargs['stored'] = i.value(*args, **kwargs)
-        o.result = 1/i1_val
-        kwargs['stored'][o.name] = o.result
-        return o.result, kwargs['stored']
-    o.value = fun
+    return unary_rule_helper(result, arguments, params, lambda x: 1./x)
+
 
 def square(result, arguments, params):
-    assert(len(result) == 1 and len(arguments) == 1)
-    i = arguments[0]
-    o = result[0]
-    def fun(*args, **kwargs):
-        if o.name in kwargs['stored'].keys():
-            return kwargs['stored'][o.name], kwargs['stored']
-        i1_val, kwargs['stored'] = i.value(*args, **kwargs)
-        o.result = jnp.square(i1_val)
-        kwargs['stored'][o.name] = o.result
-        return o.result, kwargs['stored']
-    o.value = fun
+    return unary_rule_helper(result, arguments, params, jnp.square)
+
 
 def sqrt(result, arguments, params):
-    assert(len(result) == 1 and len(arguments) == 1)
-    i = arguments[0]
-    o = result[0]
-    def fun(*args, **kwargs):
-        if o.name in kwargs['stored'].keys():
-            return kwargs['stored'][o.name], kwargs['stored']
-        i1_val, kwargs['stored'] = i.value(*args, **kwargs)
-        o.result = jnp.sqrt(i1_val)
-        kwargs['stored'][o.name] = o.result
-        return o.result, kwargs['stored']
-    o.value = fun
+    return unary_rule_helper(result, arguments, params, jnp.sqrt)
+
 

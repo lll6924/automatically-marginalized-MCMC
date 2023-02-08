@@ -49,7 +49,7 @@ def sweep_and_swap(rvs, name_mapping, expr_mapping, observed, candidates, values
             b = rvs[name_mapping[c]]
             a_expr = a['expr']
             if r_dist == 'Normal' and c_dist == 'Normal':
-                mean, std = variables[b['expr']].mean, variables[b['expr']].std
+                mean, std = variables[b['expr']].parameters
                 (x, y, p), save1 = is_linear(mean, variables[a_expr],save1)
                 dep, save2 = is_dependent(std, variables[a_expr],save2)
                 if not dep and p and values[a['name']].shape == values[b['name']].shape:
@@ -60,10 +60,10 @@ def sweep_and_swap(rvs, name_mapping, expr_mapping, observed, candidates, values
                     break
             elif r_dist == 'Gamma' and c_dist in ['Gamma', 'Exponential']:
                 if c_dist == 'Gamma':
-                    alpha, beta = variables[b['expr']].alpha, variables[b['expr']].beta
+                    alpha, beta = variables[b['expr']].parameters
                 else:
                     alpha = variables['1.']
-                    beta = variables[b['expr']].lamb
+                    beta = variables[b['expr']].parameters[0]
                 (x, y, p), save1 = is_linear(beta, variables[a_expr],save1)
                 dep, save2 = is_dependent(alpha, variables[a_expr],save2)
                 if not dep and p and not y and x and values[a['name']].shape == values[b['name']].shape:
@@ -74,10 +74,10 @@ def sweep_and_swap(rvs, name_mapping, expr_mapping, observed, candidates, values
                     break
             elif r_dist == 'Beta' and c_dist in ['BernoulliProbs', 'BinomialProbs']:
                 if c_dist == 'Binomial':
-                    lamb, cnt = variables[b['expr']].lamb, variables[b['expr']].cnt
+                    lamb, cnt = variables[b['expr']].parameters
                 else:
                     cnt = variables['1']
-                    lamb = variables[b['expr']].lamb
+                    lamb = variables[b['expr']].parameters[0]
                 (x, y, p), save1 = is_linear(lamb, variables[a_expr],save1)
                 dep, save2 = is_dependent(cnt, variables[a_expr],save2)
                 if not dep and p and not y and x and values[a['name']].shape == values[b['name']].shape:
@@ -112,8 +112,8 @@ def sweep_and_swap(rvs, name_mapping, expr_mapping, observed, candidates, values
                 v2 = b['expr']
                 c_dist = rvs[name_mapping[c]]['dist']
                 if r_dist == 'Normal' and c_dist == 'Normal':
-                    mean1, std1 = variables[v1].mean, variables[v1].std
-                    mean2, std2 = variables[v2].mean, variables[v2].std
+                    mean1, std1 = variables[v1].parameters
+                    mean2, std2 = variables[v2].parameters
                     (x, y), save = linear(mean2, variables[v1],save)
                     assert (x is not None and y is not None)
                     z = Variable()  # xm
@@ -134,8 +134,7 @@ def sweep_and_swap(rvs, name_mapping, expr_mapping, observed, candidates, values
                     update([xs1ss2], 'add', [xs1s, ss2])
                     std2_new = Variable()
                     update([std2_new], 'sqrt', [xs1ss2])
-                    variables[v2].mean = mean2_new
-                    variables[v2].std = std2_new
+                    variables[v2].parameters = (mean2_new, std2_new)
                     ss1x = Variable()  # s_1^2x
                     update([ss1x], 'mul', [ss1, x])
                     k = Variable()
@@ -155,22 +154,20 @@ def sweep_and_swap(rvs, name_mapping, expr_mapping, observed, candidates, values
 
                     std1_new = Variable()
                     update([std1_new], 'mul', [one_kx_sqrt, std1])
-                    variables[v1].mean = mean1_new
-                    variables[v1].std = std1_new
+                    variables[v1].parameters = (mean1_new, std1_new)
+
                 elif r_dist == 'Gamma' and c_dist in ['Gamma', 'Exponential']:
-                    alpha1, beta1 = variables[v1].alpha, variables[v1].beta
+                    alpha1, beta1 = variables[v1].parameters
                     if c_dist == 'Gamma':
-                        alpha2, beta2 = variables[v2].alpha, variables[v2].beta
+                        alpha2, beta2 = variables[v2].parameters
                     else:
-                        beta2 = variables[v2].lamb
+                        beta2 = variables[v2].parameters[0]
                         alpha2 = variables['1.']
                     (x, y), save = linear(beta2, variables[v1],save)
                     assert (x is not None and y == variables['0.'])
                     beta1_transformed = Variable()
                     update([beta1_transformed], 'div', [beta1, x])
-                    variables[v2].cg_alpha = alpha2
-                    variables[v2].cg_beta = alpha1
-                    variables[v2].cg_q = beta1_transformed
+                    variables[v2].parameters = (alpha2, alpha1, beta1_transformed)
                     rvs[name_mapping[c]]['dist'] = 'CompoundGamma'
                     alpha1_updated = Variable()
                     update([alpha1_updated], 'add', [alpha1, alpha2])
@@ -178,20 +175,17 @@ def sweep_and_swap(rvs, name_mapping, expr_mapping, observed, candidates, values
                     update([x2_transformed], 'mul', [variables[v2], x])
                     beta1_updated = Variable()
                     update([beta1_updated], 'add', [beta1, x2_transformed])
-                    variables[v1].alpha = alpha1_updated
-                    variables[v1].beta = beta1_updated
+                    variables[v1].parameters = (alpha1_updated, beta1_updated)
                 elif r_dist == 'Beta' and c_dist in ['BernoulliProbs', 'BinomialProbs']:
-                    alpha, beta = variables[v1].alpha, variables[v1].beta
+                    alpha, beta = variables[v1].parameters
                     if c_dist == 'BinomialProbs':
-                        lamb, cnt = variables[v2].lamb, variables[v2].cnt
+                        lamb, cnt = variables[v2].parameters
                     else:
-                        lamb = variables[v2].lamb
+                        lamb = variables[v2].parameters[0]
                         cnt = variables['1']
                     (x, y), save = linear(lamb, variables[v1],save)
                     assert (x == variables['1.'] and y == variables['0.'])
-                    variables[v2].alpha = alpha
-                    variables[v2].beta = beta
-                    variables[v2].cnt = cnt
+                    variables[v2].parameters = (alpha, beta, cnt)
                     rvs[name_mapping[c]]['dist'] = 'BetaBinomial'
                     alpha_updated = Variable()
                     update([alpha_updated], 'add', [alpha, variables[v2]])
@@ -199,8 +193,7 @@ def sweep_and_swap(rvs, name_mapping, expr_mapping, observed, candidates, values
                     update([failed], 'sub', [cnt, variables[v2]])
                     beta_updated = Variable()
                     update([beta_updated], 'add', [beta, failed])
-                    variables[v1].alpha = alpha_updated
-                    variables[v1].beta = beta_updated
+                    variables[v1].parameters = (alpha_updated, beta_updated)
             candidates.remove(a['name'])
             recovery_stack.append(a['name'])
             print(a['name'], "is marginalized")

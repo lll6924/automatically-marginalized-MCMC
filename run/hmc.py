@@ -8,6 +8,8 @@ import os
 import numpy as np
 from utils import PythonLiteralOption
 from time import time
+import pathlib
+
 
 """
     TODO: use Arviz to evaluate multiple chains
@@ -23,15 +25,13 @@ from time import time
 @click.option('--algorithm', default='NUTS', help = 'The MCMC algorithm of Numpyro to use. Choose from [\'NUTS\', \'HMC\']')
 def main(model, warm_up_steps, sample_steps,rng_key,plot,model_parameters, algorithm):
     parameter_settings = '_'.join(model_parameters.values())
-    if not os.path.exists('result'):
-        os.mkdir('result')
-    if not os.path.exists('result/{}'.format(model)):
-        os.mkdir('result/{}'.format(model))
-    if not os.path.exists('result/{}/{}_{}_{}'.format(model,parameter_settings, warm_up_steps, sample_steps)):
-        os.mkdir('result/{}/{}_{}_{}'.format(model,parameter_settings, warm_up_steps, sample_steps))
-    if not os.path.exists('result/{}/{}_{}_{}/{}'.format(model,parameter_settings, warm_up_steps, sample_steps,'HMC')):
-        os.mkdir('result/{}/{}_{}_{}/{}'.format(model,parameter_settings, warm_up_steps, sample_steps,'HMC'))
-    result_file = 'result/{}/{}_{}_{}/{}/{}'.format(model,parameter_settings, warm_up_steps, sample_steps,'HMC',str(rng_key))
+
+    result_path = 'result/{}/{}_{}_{}/{}'.format(model,parameter_settings, warm_up_steps, sample_steps,'HMC')
+    result_file = result_path + '/' + str(rng_key)
+    p = pathlib.Path(result_path)
+    p.mkdir(parents=True, exist_ok=True)
+
+
     model_name = model
     module = importlib.import_module('model')
     model = getattr(module, model_name)(**model_parameters)

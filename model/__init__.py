@@ -1,3 +1,4 @@
+from .model import *
 from .eight_schools import *
 from .linear_ssm import *
 from .eight_schools_reparameterized import *

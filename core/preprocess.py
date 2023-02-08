@@ -8,7 +8,7 @@ from numpyro.handlers import seed, trace
 from utils import get_alphabetic_list
 from rule import Variable, update
 import jax.numpy as jnp
-from primitives import MyNormal, MyHalfCauchy, MyGamma, MyExponential, MyBeta, MyBernoulli, MyBinomial, MyUniform, MyPareto
+from primitives import MyNormal, MyHalfCauchy, MyGamma, MyExponential, MyBeta, MyBernoulli, MyBinomial, MyUniform, MyPareto, distribution_mapping
 
 def preprocess(model, model_parameters):
     module = importlib.import_module('model')
@@ -135,40 +135,18 @@ def preprocess(model, model_parameters):
     # for e in eqns:
     #      print(e.primitive, e.invars, e.outvars, e.params)
     for rv in rvs:
-        if rv['dist'] == 'Normal':
-            mean, std = MyNormal.get_parameters(pred, rv)
-            variables[rv['expr']].mean = variables[mean]
-            variables[rv['expr']].std = variables[std]
-        elif rv['dist'] == 'HalfCauchy':
-            variables[rv['expr']].scale = variables[MyHalfCauchy.get_parameters(pred, rv)]
-        elif rv['dist'] == 'Gamma':
-            alpha, beta = MyGamma.get_parameters(pred, rv)
-            variables[rv['expr']].alpha = variables[alpha]
-            variables[rv['expr']].beta = variables[beta]
-        elif rv['dist'] == 'Exponential':
-            variables[rv['expr']].lamb = variables[MyExponential.get_parameters(pred, rv)]
-        elif rv['dist'] == 'Beta':
-            alpha, beta = MyBeta.get_parameters(pred, rv)
-            variables[rv['expr']].alpha = variables[alpha]
-            variables[rv['expr']].beta = variables[beta]
-        elif rv['dist'] == 'BernoulliProbs':
-            variables[rv['expr']].lamb = variables[MyBernoulli.get_parameters(pred, rv)]
-        elif rv['dist'] == 'BinomialProbs':
-            lamb, cnt = MyBinomial.get_parameters(pred, rv)
-            variables[rv['expr']].lamb = variables[lamb]
-            variables[rv['expr']].cnt = variables[cnt]
-        elif rv['dist'] == 'Uniform':
+        assert(rv['dist'] in distribution_mapping.keys())
+        if rv['dist'] == 'Uniform':
             alpha, beta = MyUniform.get_parameters(pred, rv)
             assert (alpha == '0.0ShapedArray(float32[])' and beta == '1.0ShapedArray(float32[])')
-            variables[rv['expr']].alpha = variables[alpha]
-            variables[rv['expr']].beta = variables[beta]
-        elif rv['dist'] == 'Pareto':
+        if rv['dist'] == 'Pareto':
             alpha, beta = MyPareto.get_parameters(pred, rv)
             assert (alpha == '1.0ShapedArray(float32[])')
-            variables[rv['expr']].alpha = variables[alpha]
-            variables[rv['expr']].beta = variables[beta]
-        else:
-            raise ValueError('Unsupported distribution family: {}!'.format(rv['dist']))
+        parameter_names = distribution_mapping[rv['dist']].get_parameters(pred, rv)
+        tup = tuple()
+        for p in parameter_names:
+            tup = tup + (variables[p],)
+        variables[rv['expr']].parameters = tup
 
     candidates = set()
     for rv in rvs:

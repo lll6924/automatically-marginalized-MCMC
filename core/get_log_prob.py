@@ -1,8 +1,9 @@
 import jax.numpy as jnp
 import jax.scipy as jsc
-from primitives import MyNormal, MyHalfCauchy, MyGamma, MyExponential, MyCompoundGamma, MyBeta, MyBernoulli, MyBinomial, MyBetaBinomial, MyUniform, MyPareto
+from primitives import MyNormal, MyHalfCauchy, MyGamma, MyExponential, MyCompoundGamma, MyBeta, MyBernoulli, MyBinomial, MyBetaBinomial, MyUniform, MyPareto, distribution_mapping
 from jax import random, jit, grad, make_jaxpr
 from time import time
+
 def get_log_prob(rvs, name_mapping, expr_mapping, observed, candidates, values, variables, recovery_stack):
     to_evaluate = {}
     for key, value in values.items():
@@ -19,49 +20,9 @@ def get_log_prob(rvs, name_mapping, expr_mapping, observed, candidates, values, 
         for c in candidates:
             r = rvs[name_mapping[c]]
             if r['name'] in candidates:
-                if r['dist'] == 'Normal':
-                    mean, stored = variables[r['expr']].mean.value(substitute=substitute, stored = stored)
-                    std, stored = variables[r['expr']].std.value(substitute=substitute, stored = stored)
-                    res += jnp.sum(MyNormal.evaluate(mean, std, substitute[r['expr']]))
-                elif r['dist'] == 'HalfCauchy':
-                    scale, stored = variables[r['expr']].scale.value(substitute=substitute, stored = stored)
-                    res += jnp.sum(MyHalfCauchy.evaluate(scale, substitute[r['expr']]))
-                elif r['dist'] == 'Gamma':
-                    alpha, stored = variables[r['expr']].alpha.value(substitute=substitute, stored = stored)
-                    beta, stored = variables[r['expr']].beta.value(substitute=substitute, stored = stored)
-                    res += jnp.sum(MyGamma.evaluate(alpha, beta, substitute[r['expr']]))
-                elif r['dist'] == 'Exponential':
-                    lamb, stored = variables[r['expr']].lamb.value(substitute=substitute, stored = stored)
-                    res += jnp.sum(MyExponential.evaluate(lamb, substitute[r['expr']]))
-                elif r['dist'] == 'CompoundGamma':
-                    alpha, stored = variables[r['expr']].cg_alpha.value(substitute=substitute, stored = stored)
-                    beta, stored = variables[r['expr']].cg_beta.value(substitute=substitute, stored = stored)
-                    q, stored = variables[r['expr']].cg_q.value(substitute=substitute, stored = stored)
-                    res += jnp.sum(MyCompoundGamma.evaluate(alpha, beta, q, substitute[r['expr']]))
-                elif r['dist'] == 'Beta':
-                    alpha, stored = variables[r['expr']].alpha.value(substitute=substitute, stored = stored)
-                    beta, stored = variables[r['expr']].beta.value(substitute=substitute, stored = stored)
-                    res += jnp.sum(MyBeta.evaluate(alpha, beta, substitute[r['expr']]))
-                elif r['dist'] == 'BernoulliProbs':
-                    lamb, stored = variables[r['expr']].lamb.value(substitute=substitute, stored = stored)
-                    res += jnp.sum(MyBernoulli.evaluate(lamb, substitute[r['expr']]))
-                elif r['dist'] == 'BinomialProbs':
-                    lamb, stored = variables[r['expr']].lamb.value(substitute=substitute, stored = stored)
-                    cnt, stored = variables[r['expr']].cnt.value(substitute=substitute, stored = stored)
-                    res += jnp.sum(MyBinomial.evaluate(lamb, cnt, substitute[r['expr']]))
-                elif r['dist'] == 'BetaBinomial':
-                    alpha, stored = variables[r['expr']].alpha.value(substitute=substitute, stored = stored)
-                    beta, stored = variables[r['expr']].beta.value(substitute=substitute, stored = stored)
-                    cnt, stored = variables[r['expr']].cnt.value(substitute=substitute, stored = stored)
-                    res += jnp.sum(MyBetaBinomial.evaluate(alpha, beta, cnt, substitute[r['expr']]))
-                elif r['dist'] == 'Uniform':
-                    alpha, stored = variables[r['expr']].alpha.value(substitute=substitute, stored = stored)
-                    beta, stored = variables[r['expr']].beta.value(substitute=substitute, stored = stored)
-                    res += jnp.sum(MyUniform.evaluate(alpha, beta, substitute[r['expr']]))
-                elif r['dist'] == 'Pareto':
-                    alpha, stored = variables[r['expr']].alpha.value(substitute=substitute, stored = stored)
-                    beta, stored = variables[r['expr']].beta.value(substitute=substitute, stored = stored)
-                    res += jnp.sum(MyPareto.evaluate(alpha, beta, substitute[r['expr']]))
+                params, stored = variables[r['expr']].get_parameters(substitute=substitute, stored = stored)
+                res += jnp.sum(distribution_mapping[r['dist']].evaluate(params, substitute[r['expr']]))
+
         return res
 
     dims = {}
@@ -140,41 +101,10 @@ def get_log_prob(rvs, name_mapping, expr_mapping, observed, candidates, values, 
         for v in reversed(recovery_stack):
             r = rvs[name_mapping[v]]
             rng_key, this_key = random.split(rng_key)
-            if r['dist'] == 'Normal':
-                mean, stored = variables[r['expr']].mean.value(substitute=substitute, stored = stored)
-                std, stored = variables[r['expr']].std.value(substitute=substitute, stored = stored)
-                val = MyNormal.sample(mean, std, this_key)
-            elif r['dist'] == 'HalfCauchy':
-                scale, stored = variables[r['expr']].scale.value(substitute=substitute, stored = stored)
-                val = MyHalfCauchy.sample(scale, this_key)
-            elif r['dist'] == 'Gamma':
-                alpha, stored = variables[r['expr']].alpha.value(substitute=substitute, stored=stored)
-                beta, stored = variables[r['expr']].beta.value(substitute=substitute, stored=stored)
-                val = MyGamma.sample(alpha, beta, this_key)
-            elif r['dist'] == 'Exponential':
-                lamb, stored = variables[r['expr']].lamb.value(substitute=substitute, stored = stored)
-                val = MyExponential.sample(lamb, this_key)
-            elif r['dist'] == 'Beta':
-                alpha, stored = variables[r['expr']].alpha.value(substitute=substitute, stored=stored)
-                beta, stored = variables[r['expr']].beta.value(substitute=substitute, stored=stored)
-                val = MyBeta.sample(alpha, beta, this_key)
-            elif r['dist'] == 'BernoulliProbs':
-                lamb, stored = variables[r['expr']].lamb.value(substitute=substitute, stored=stored)
-                val = MyBernoulli.sample(lamb, this_key)
-            elif r['dist'] == 'BinomialProbs':
-                lamb, stored = variables[r['expr']].lamb.value(substitute=substitute, stored=stored)
-                cnt, stored = variables[r['expr']].cnt.value(substitute=substitute, stored=stored)
-                val = MyBinomial.sample(lamb, cnt, this_key)
-            elif r['dist'] == 'Uniform':
-                alpha, stored = variables[r['expr']].alpha.value(substitute=substitute, stored=stored)
-                beta, stored = variables[r['expr']].beta.value(substitute=substitute, stored=stored)
-                val = MyUniform.sample(alpha, beta, this_key)
-            elif r['dist'] == 'Pareto':
-                alpha, stored = variables[r['expr']].alpha.value(substitute=substitute, stored=stored)
-                beta, stored = variables[r['expr']].beta.value(substitute=substitute, stored=stored)
-                val = MyPareto.sample(alpha, beta, this_key)
-            else:
-                raise ValueError('Unable to sample from {}!'.format(r['dist']))
+
+            params, stored = variables[r['expr']].get_parameters(substitute=substitute, stored=stored)
+            val = distribution_mapping[r['dist']].sample(params, this_key)
+
             substitute[r['expr']] = jnp.reshape(val, values[v].shape)
             recovered.append(val.flatten())
         if len(recovered)>0:

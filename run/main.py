@@ -3,6 +3,8 @@ import os
 from core import marginalized_hmc
 from utils import PythonLiteralOption
 import sys
+import pathlib
+
 sys.setrecursionlimit(10000)
 
 @click.command()
@@ -22,13 +24,10 @@ def main(model, warm_up_steps, sample_steps, rng_key, protected, model_parameter
         os.mkdir('result')
     parameter_settings = '_'.join(model_parameters.values())
     parameter_settings = parameter_settings + '_{}'.format('-'.join(protected))
-    if not os.path.exists('result/{}'.format(model)):
-        os.mkdir('result/{}'.format(model))
-    if not os.path.exists('result/{}/{}_{}_{}'.format(model,parameter_settings, warm_up_steps, sample_steps)):
-        os.mkdir('result/{}/{}_{}_{}'.format(model,parameter_settings, warm_up_steps, sample_steps))
-    if not os.path.exists('result/{}/{}_{}_{}/{}'.format(model,parameter_settings, warm_up_steps, sample_steps,'MHMC')):
-        os.mkdir('result/{}/{}_{}_{}/{}'.format(model,parameter_settings, warm_up_steps, sample_steps,'MHMC'))
-    result_file = 'result/{}/{}_{}_{}/{}/{}'.format(model,parameter_settings, warm_up_steps, sample_steps,'MHMC',str(rng_key))
+    result_path = 'result/{}/{}_{}_{}/{}'.format(model,parameter_settings, warm_up_steps, sample_steps,'MHMC')
+    result_file = result_path + '/' + str(rng_key)
+    p = pathlib.Path(result_path)
+    p.mkdir(parents=True, exist_ok=True)
 
     marginalized_hmc(model, model_parameters, warm_up_steps, sample_steps, result_file, rng_key, protected, algorithm, plot, just_compile,no_marginalization)
 

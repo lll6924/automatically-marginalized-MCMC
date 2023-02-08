@@ -1,8 +1,9 @@
 import numpyro.distributions as dist
 import jax.numpy as jnp
 from primitives import my_sample
+from model import Model
 
-class GammaModel:
+class GammaModel(Model):
 
     """
         A model to test the case for Gamma conjugacy

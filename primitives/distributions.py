@@ -25,12 +25,14 @@ class MyNormal:
             std = pred[lst][0]
         return mean, std
     @staticmethod
-    def evaluate(mean, std, value):
+    def evaluate(params, value):
+        mean, std = params
         d = dist.Normal(mean, std)
         return d.log_prob(value)
 
     @staticmethod
-    def sample(mean, std, rng_key):
+    def sample(params, rng_key):
+        mean, std = params
         d = dist.Normal(mean, std)
         return d.sample(rng_key)
 
@@ -45,14 +47,16 @@ class MyHalfCauchy:
             scale = pred[lst_lst][1]
         else:
             scale = pred[lst_lst][0]
-        return scale
+        return (scale,)
     @staticmethod
-    def evaluate(scale, value):
+    def evaluate(params, value):
+        scale = params[0]
         d = dist.HalfCauchy(scale)
         return d.log_prob(value)
 
     @staticmethod
-    def sample(scale, rng_key):
+    def sample(params, rng_key):
+        scale = params[0]
         d = dist.HalfCauchy(scale)
         return d.sample(rng_key)
 
@@ -71,12 +75,14 @@ class MyGamma:
             alpha = pred[lst][0]
         return alpha, beta
     @staticmethod
-    def evaluate(alpha, beta, value):
+    def evaluate(params, value):
+        alpha, beta = params
         d = dist.Gamma(alpha, beta)
         return d.log_prob(value)
 
     @staticmethod
-    def sample(alpha, beta, rng_key):
+    def sample(params, rng_key):
+        alpha, beta = params
         d = dist.Gamma(alpha, beta)
         return d.sample(rng_key)
 
@@ -89,14 +95,16 @@ class MyExponential:
             lamb = pred[rv['expr']][1]
         else:
             lamb = pred[rv['expr']][0]
-        return lamb
+        return (lamb,)
     @staticmethod
-    def evaluate(lamb, value):
+    def evaluate(params, value):
+        lamb = params[0]
         d = dist.Exponential(lamb)
         return d.log_prob(value)
 
     @staticmethod
-    def sample(lamb, rng_key):
+    def sample(params, rng_key):
+        lamb = params[0]
         d = dist.Exponential(lamb)
         return d.sample(rng_key)
 
@@ -105,13 +113,14 @@ class MyCompoundGamma:
     def get_parameters(pred, rv):
         raise NotImplementedError()
     @staticmethod
-    def evaluate(alpha, beta, q, value):
+    def evaluate(params, value):
+        alpha, beta, q = params
         base = jnp.log(value/q) * (alpha - 1) + jnp.log(1 + value/q) * (- alpha - beta) - jnp.log(q)
         div = jsc.special.gammaln(alpha) + jsc.special.gammaln(beta) - jsc.special.gammaln(alpha + beta)
         return base - div
 
     @staticmethod
-    def sample(alpha, beta, q, rng_key):
+    def sample(params, rng_key):
         raise NotImplementedError()
 
 class MyBeta:
@@ -151,11 +160,13 @@ class MyBeta:
             alpha = get_last_alphabetic(alpha)
         return pred[alpha][0], pred[beta][0]
     @staticmethod
-    def evaluate(alpha, beta, value):
+    def evaluate(params, value):
+        alpha, beta = params
         d = dist.Beta(alpha, beta)
         return d.log_prob(value)
     @staticmethod
-    def sample(alpha, beta, rng_key):
+    def sample(params, rng_key):
+        alpha, beta = params
         d = dist.Beta(alpha, beta)
         return d.sample(rng_key)
 
@@ -163,13 +174,15 @@ class MyBernoulli:
     @staticmethod
     def get_parameters(pred, rv):
         lst = get_last_alphabetic(rv['expr'])
-        return pred[lst][1]
+        return (pred[lst][1],)
     @staticmethod
-    def evaluate(lamb, value):
+    def evaluate(params, value):
+        lamb = params[0]
         d = dist.BernoulliProbs(lamb)
         return d.log_prob(value)
     @staticmethod
-    def sample(lamb, rng_key):
+    def sample(params, rng_key):
+        lamb = params[0]
         d = dist.BernoulliProbs(lamb)
         return d.sample(rng_key)
 
@@ -178,11 +191,13 @@ class MyBinomial:
     def get_parameters(pred, rv):
         return pred[rv['expr']][5], pred[rv['expr']][6]
     @staticmethod
-    def evaluate(lamb, cnt, value):
+    def evaluate(params, value):
+        lamb, cnt = params
         d = dist.BinomialProbs(lamb, cnt)
         return d.log_prob(value)
     @staticmethod
-    def sample(lamb, cnt, rng_key):
+    def sample(params, rng_key):
+        lamb, cnt = params
         d = dist.BinomialProbs(lamb, cnt)
         return d.sample(rng_key)
 
@@ -191,12 +206,13 @@ class MyBetaBinomial:
     def get_parameters(pred, rv):
         raise NotImplementedError()
     @staticmethod
-    def evaluate(alpha, beta, cnt, value):
+    def evaluate(params, value):
+        alpha, beta, cnt = params
         d = dist.BetaBinomial(alpha, beta, cnt)
         return d.log_prob(value)
 
     @staticmethod
-    def sample(alpha, beta, cnt, rng_key):
+    def sample(params, rng_key):
         raise NotImplementedError()
 
 
@@ -209,12 +225,14 @@ class MyUniform:
 
         return pred[lst][1], pred[lst][0]
     @staticmethod
-    def evaluate(alpha, beta, value):
+    def evaluate(params, value):
+        alpha, beta = params
         d = dist.Uniform(alpha, beta)
         return d.log_prob(value)
 
     @staticmethod
-    def sample(alpha, beta, rng_key):
+    def sample(params, rng_key):
+        alpha, beta = params
         d = dist.Uniform(alpha, beta)
         return d.sample(rng_key)
 
@@ -235,14 +253,30 @@ class MyPareto:
             beta = pred[lst3][0]
         return alpha, beta
     @staticmethod
-    def evaluate(alpha, beta, value):
+    def evaluate(params, value):
+        alpha, beta = params
         d = dist.Pareto(alpha, beta)
         return d.log_prob(value)
 
     @staticmethod
-    def sample(alpha, beta, rng_key):
+    def sample(params, rng_key):
+        alpha, beta = params
         d = dist.Pareto(alpha, beta)
         return d.sample(rng_key)
+
+distribution_mapping = {
+    'Normal': MyNormal,
+    'HalfCauchy': MyHalfCauchy,
+    'Gamma': MyGamma,
+    'Exponential': MyExponential,
+    'CompoundGamma': MyCompoundGamma,
+    'Beta': MyBeta,
+    'BernoulliProbs': MyBernoulli,
+    'BinomialProbs': MyBinomial,
+    'BetaBinomial': MyBetaBinomial,
+    'Uniform': MyUniform,
+    'Pareto': MyPareto
+}
 
 if __name__ == '__main__':
     x1 = jnp.array(4.)
