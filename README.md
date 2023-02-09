@@ -1,15 +1,18 @@
 # Automatic_Marginalization
 
+Implementations of the preprint: [Automatically Marginalized MCMC in Probabilistic Programming](https://arxiv.org/pdf/2302.00564.pdf).
+
 ## Dependencies
 
 * JAX 0.4.1
 * NumPyro 0.10.1
 
 ## Assumptions of model implementations
-* Each model is declared as a class similar to one in `model/eight_schools.py`, where functions `model`, `args`, `kwargs` are implemented.
-* `model` is a function that declares a model with the same grammars as NumPyro, except that `numpyro.sample` statement is replaced with `primitives.my_sample`. In addition, function name `register` is held for special uses.
+* Each model is declared as a subclass of `model.Model`, where functions `model`, `args`, `kwargs`, `name` are implemented.
+* `model` is a function that declares a model with the same grammars as NumPyro, except that `numpyro.sample` statement is replaced with `primitives.my_sample`. `my_sample` is a hack to annotate random variables in Jaxprs and function name `register` is used for it.
 * `args` is assumed to be a tuple of parameters that should always send to `model` (for example, covariates).
 * `kwargs` is assumed to be a dictionary of observations, without which `model` becomes the generative model.
+* `name` is the name of the model.
 * The overall implementations are experimental in nature and can be sensitive to different writing styles. If you find a problem, feel free to open an issue.
 
 ## Running Commands
