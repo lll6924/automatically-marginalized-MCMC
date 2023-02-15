@@ -9,8 +9,11 @@ import numpy as np
 from utils import PythonLiteralOption
 from time import time
 import pathlib
-
-
+import arviz
+import numpyro
+import jax
+numpyro.set_host_device_count(4)
+print(jax.local_device_count())
 """
     TODO: use Arviz to evaluate multiple chains
 """
@@ -44,11 +47,13 @@ def main(model, warm_up_steps, sample_steps,rng_key,plot,model_parameters, algor
     else:
         raise ValueError('Unknown algorithm: {}'.format(algorithm))
 
-    mcmc = MCMC(nuts_kernel, num_warmup=warm_up_steps, num_samples=sample_steps)
+    mcmc = MCMC(nuts_kernel, num_warmup=warm_up_steps, num_samples=sample_steps, num_chains=4)
     mcmc.run(rng_key, *model.args(), **model.kwargs(), extra_fields=('potential_energy','z_grad'))
     sites = mcmc._states[mcmc._sample_field]
     #print(sites)
     end_time = time()
+    data = arviz.from_numpyro(mcmc)
+    print(arviz.ess(data))
     print_summary(sites)
     overall_time = end_time - start_time
     esss = []

@@ -4,8 +4,8 @@ import jax.numpy as jnp
 from numpyro.diagnostics import print_summary, effective_sample_size
 from jax import device_get
 from jax.lax import fori_loop
-
-
+import arviz
+import numpyro
 def hmc(log_prob, init_params, all_latent_dims, postprocess = None, recover = None,
         result_file = 'result', plot = False, warm_up_steps = 10000, sample_steps = 100000, rng_key = 0,
         algorithm = 'NUTS'):
@@ -24,8 +24,8 @@ def hmc(log_prob, init_params, all_latent_dims, postprocess = None, recover = No
         nuts_kernel = HMC(potential_fn=potential, adapt_mass_matrix=True, )
     else:
         raise ValueError('Unknown algorithm: {}'.format(algorithm))
-    mcmc = MCMC(nuts_kernel, num_warmup=warm_up_steps, num_samples=sample_steps)
-    mcmc.run(rng_key, extra_fields=('potential_energy','z_grad'),init_params = init_params)
+    mcmc = MCMC(nuts_kernel, num_warmup=warm_up_steps, num_samples=sample_steps, num_chains=4)
+    mcmc.run(rng_key, extra_fields=('potential_energy','z_grad'),init_params = jnp.repeat(jnp.expand_dims(init_params, axis=0), 4 ,axis=0))
     sites = mcmc._states[mcmc._sample_field]
     if recover is not None:
         new_sites = []
@@ -44,6 +44,8 @@ def hmc(log_prob, init_params, all_latent_dims, postprocess = None, recover = No
         sites = jnp.array(new_sites)
     if postprocess is not None:
         sites_kv = postprocess(sites)
+        data = arviz.from_dict(sites_kv)
+        print(arviz.ess(data))
         print_summary(sites_kv)
         return sites, sites_kv
     else:

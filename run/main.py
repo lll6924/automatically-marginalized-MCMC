@@ -4,9 +4,11 @@ from core import marginalized_hmc
 from utils import PythonLiteralOption
 import sys
 import pathlib
-
+import numpyro
+import jax
+numpyro.set_host_device_count(4)
 sys.setrecursionlimit(10000)
-
+print(jax.local_device_count())
 @click.command()
 @click.option('--model', default='EightSchools', help = 'The Model to Perform Inference. See classes under model/ for details')
 @click.option('--warm_up_steps', default=10000, help = 'Number of warm up samples in HMC')
