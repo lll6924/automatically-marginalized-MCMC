@@ -8,7 +8,7 @@ import arviz
 import numpyro
 def hmc(log_prob, init_params, all_latent_dims, postprocess = None, recover = None,
         result_file = 'result', plot = False, warm_up_steps = 10000, sample_steps = 100000, rng_key = 0,
-        algorithm = 'NUTS'):
+        algorithm = 'NUTS', parallel=False):
 
     """
         Call NumPyro's HMC given a log density function, and recover with a recovery function
@@ -24,8 +24,12 @@ def hmc(log_prob, init_params, all_latent_dims, postprocess = None, recover = No
         nuts_kernel = HMC(potential_fn=potential, adapt_mass_matrix=True, )
     else:
         raise ValueError('Unknown algorithm: {}'.format(algorithm))
-    mcmc = MCMC(nuts_kernel, num_warmup=warm_up_steps, num_samples=sample_steps, num_chains=4)
-    mcmc.run(rng_key, extra_fields=('potential_energy','z_grad'),init_params = jnp.repeat(jnp.expand_dims(init_params, axis=0), 4 ,axis=0))
+    num_chains = 1
+    if parallel:
+        num_chains = 4
+        init_params = jnp.repeat(jnp.expand_dims(init_params, axis=0), num_chains ,axis=0)
+    mcmc = MCMC(nuts_kernel, num_warmup=warm_up_steps, num_samples=sample_steps, num_chains=num_chains)
+    mcmc.run(rng_key, extra_fields=('potential_energy','z_grad'),init_params = init_params)
     sites = mcmc._states[mcmc._sample_field]
     if recover is not None:
         new_sites = []

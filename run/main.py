@@ -6,9 +6,7 @@ import sys
 import pathlib
 import numpyro
 import jax
-numpyro.set_host_device_count(4)
 sys.setrecursionlimit(10000)
-print(jax.local_device_count())
 @click.command()
 @click.option('--model', default='EightSchools', help = 'The Model to Perform Inference. See classes under model/ for details')
 @click.option('--warm_up_steps', default=10000, help = 'Number of warm up samples in HMC')
@@ -20,7 +18,11 @@ print(jax.local_device_count())
 @click.option('--plot', is_flag=True)
 @click.option('--just_compile', is_flag=True, help = 'If flagged, the number of Jaxprs will be reported')
 @click.option('--no_marginalization', is_flag=True, help = 'If flagged, automatic marginalization will not be performed')
-def main(model, warm_up_steps, sample_steps, rng_key, protected, model_parameters, algorithm, plot, just_compile,no_marginalization):
+@click.option('--parallel', is_flag=True, help = 'If flagged, 4 parallel chains will be sampled')
+def main(model, warm_up_steps, sample_steps, rng_key, protected, model_parameters, algorithm, plot, just_compile,no_marginalization, parallel):
+    if parallel:
+        numpyro.set_host_device_count(4)
+
     print('Protected variables:', protected)
     if not os.path.exists('result'):
         os.mkdir('result')
@@ -31,7 +33,7 @@ def main(model, warm_up_steps, sample_steps, rng_key, protected, model_parameter
     p = pathlib.Path(result_path)
     p.mkdir(parents=True, exist_ok=True)
 
-    marginalized_hmc(model, model_parameters, warm_up_steps, sample_steps, result_file, rng_key, protected, algorithm, plot, just_compile,no_marginalization)
+    marginalized_hmc(model, model_parameters, warm_up_steps, sample_steps, result_file, rng_key, protected, algorithm, plot, just_compile,no_marginalization, parallel)
 
 
 

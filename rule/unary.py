@@ -1,7 +1,6 @@
 import jax.numpy as jnp
 
-def xla_call(result, arguments, params): # other xla_calls are already dealt with in variables.update_callable
-    assert (params['name'] == 'register')
+def register(result, arguments, params):
     def fun(*args, **kwargs):
         if result[0].name in kwargs['stored'].keys():
             return kwargs['stored'][result[0].name], kwargs['stored']

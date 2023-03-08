@@ -7,7 +7,7 @@ import numpy as np
 import importlib
 from jax import random, jit, grad, make_jaxpr
 
-def marginalized_hmc(model, model_parameters, warm_up_steps, sample_steps, result_file, rng_key, protected, algorithm, plot = False, just_compile = False, no_marginalization = True):
+def marginalized_hmc(model, model_parameters, warm_up_steps, sample_steps, result_file, rng_key, protected, algorithm, plot = False, just_compile = False, no_marginalization = True, parallel = False):
     time1 = time()
 
     # preprocess the model into our representation
@@ -40,7 +40,7 @@ def marginalized_hmc(model, model_parameters, warm_up_steps, sample_steps, resul
     else:
         time2 = time()
 
-        samples, samples_with_key = hmc(log_prob, jnp.zeros(latent_dims), all_latent_dims, postprocess, recover, result_file, algorithm = algorithm, warm_up_steps = warm_up_steps, sample_steps = sample_steps, rng_key=rng_key)
+        samples, samples_with_key = hmc(log_prob, jnp.zeros(latent_dims), all_latent_dims, postprocess, recover, result_file, algorithm = algorithm, warm_up_steps = warm_up_steps, sample_steps = sample_steps, rng_key=rng_key, parallel=parallel)
 
         time3 = time()
 

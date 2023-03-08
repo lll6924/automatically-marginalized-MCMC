@@ -8,7 +8,7 @@ from numpyro.handlers import seed, trace
 from utils import get_alphabetic_list
 from rule import Variable, update
 import jax.numpy as jnp
-from primitives import MyNormal, MyHalfCauchy, MyGamma, MyExponential, MyBeta, MyBernoulli, MyBinomial, MyUniform, MyPareto, distribution_mapping
+from primitives import MyUniform, MyPareto, distribution_mapping, register_p
 
 def preprocess(model, model_parameters):
     module = importlib.import_module('model')
@@ -54,7 +54,7 @@ def preprocess(model, model_parameters):
     expr_mapping = {}
     name_mapping = {}
     for e in eqns:
-        if isinstance(e.primitive, CallPrimitive) and e.params['name'] == 'register':
+        if str(e.primitive) == 'register':
             for var in e.invars:
                 var = str(var)
                 is_rv[var] = True
@@ -117,7 +117,7 @@ def preprocess(model, model_parameters):
             variables[var] = v
 
         outs = [variables[str(v)] for v in e.outvars]
-        if str(e.primitive) == 'xla_call' and e.params['name'] == 'register':
+        if str(e.primitive) == 'register':
             update(outs, str(e.primitive), ins, params=e.params)
         else:
             update(outs, str(e.primitive), ins, eqn=e)

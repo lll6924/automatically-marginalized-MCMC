@@ -12,11 +12,6 @@ import pathlib
 import arviz
 import numpyro
 import jax
-numpyro.set_host_device_count(4)
-print(jax.local_device_count())
-"""
-    TODO: use Arviz to evaluate multiple chains
-"""
 
 @click.command()
 @click.option('--model', default='EightSchools', help = 'The Model to Perform Inference')
@@ -26,7 +21,11 @@ print(jax.local_device_count())
 @click.option('--plot', is_flag=True)
 @click.option('--model_parameters', cls=PythonLiteralOption, default='{}', help = 'The parameters as a dictionary that feed into model construction')
 @click.option('--algorithm', default='NUTS', help = 'The MCMC algorithm of Numpyro to use. Choose from [\'NUTS\', \'HMC\']')
-def main(model, warm_up_steps, sample_steps,rng_key,plot,model_parameters, algorithm):
+@click.option('--parallel', is_flag=True, help = 'If flagged, 4 parallel chains will be sampled')
+def main(model, warm_up_steps, sample_steps,rng_key,plot,model_parameters, algorithm, parallel):
+    if parallel:
+        numpyro.set_host_device_count(4)
+
     parameter_settings = '_'.join(model_parameters.values())
 
     result_path = 'result/{}/{}_{}_{}/{}'.format(model,parameter_settings, warm_up_steps, sample_steps,'HMC')
@@ -46,8 +45,10 @@ def main(model, warm_up_steps, sample_steps,rng_key,plot,model_parameters, algor
         nuts_kernel = HMC(model.model, adapt_mass_matrix=True)
     else:
         raise ValueError('Unknown algorithm: {}'.format(algorithm))
-
-    mcmc = MCMC(nuts_kernel, num_warmup=warm_up_steps, num_samples=sample_steps, num_chains=4)
+    num_chains = 1
+    if parallel:
+        num_chains = 4
+    mcmc = MCMC(nuts_kernel, num_warmup=warm_up_steps, num_samples=sample_steps, num_chains=num_chains)
     mcmc.run(rng_key, *model.args(), **model.kwargs(), extra_fields=('potential_energy','z_grad'))
     sites = mcmc._states[mcmc._sample_field]
     #print(sites)

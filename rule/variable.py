@@ -143,8 +143,7 @@ def is_linear(v1, v2, stored):
             stored[v1.name] = (False, False, False)
         return stored[v1.name], stored
 
-    if v1.operator == 'xla_call':
-        assert (v1.params['name'] == 'register')
+    if v1.operator == 'register':
         return is_linear(v1.operands[0], v2, stored)
 
     for v in v1.operands:
@@ -263,8 +262,7 @@ def linear(v1, v2, stored):
         stored[v1.name] = (None, None)
         return stored[v1.name], stored
 
-    if v1.operator == 'xla_call':
-        assert (v1.params['name'] == 'register')
+    if v1.operator == 'register':
         return linear(v1.operands[0], v2, stored)
 
     for v in v1.operands:
