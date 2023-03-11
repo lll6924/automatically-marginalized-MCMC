@@ -26,6 +26,75 @@ def marginalized_hmc(model, model_parameters, warm_up_steps, sample_steps, resul
     if just_compile:
         jpr = make_jaxpr(log_prob)(jnp.zeros(latent_dims))
         print('Size of the Jaxprs of log_prob', len(jpr.eqns))
+        head = """
+    data {
+      vector[192] a0;
+    }
+    parameters {
+      vector[4] b0;           
+    }    
+    model {
+        """
+        with open('compiled','w') as f:
+            print(head,file=f)
+            from utils import get_alphabetic_list
+            n_consts = len(jpr.consts)
+            n_in_vars = len(jpr.in_avals)
+            print(jpr.consts, jpr.in_avals)
+
+            def _filter(str):
+                #if str in ['do','if','in','or','sd','col','cos','erf','exp','fma','for','int','inv','log',
+                #           'max','min','new','not','pow','row','sin','sum']:
+                return str + '0'
+                #return str
+            for e in jpr.eqns:
+                for o in e.outvars:
+                    if str(e.primitive) == 'broadcast_in_dim' and o.aval.dtype==jnp.int32:
+                        print("int", _filter(str(o)),';', file=f)
+                    elif(o.aval.size>1):
+                        print("vector[",o.aval.size,']',_filter(str(o)),';',file=f)
+                    else:
+                        print("real",_filter(str(o)),';',file=f)
+            for e in jpr.eqns:
+
+                #print(e.primitive, e.invars, e.outvars, e.params, e.outvars[0].aval)
+                ins = [_filter(str(i)) for i in e.invars]
+                outs = [_filter(str(o)) for o in e.outvars]
+                if str(e.primitive) == 'add':
+                    print(outs[0],'=',ins[0],'+',ins[1], ';', file=f)
+                elif str(e.primitive) == 'mul':
+                    print(outs[0],'=',ins[0],'*',ins[1], ';', file=f)
+                elif str(e.primitive) == 'sub':
+                    print(outs[0],'=',ins[0],'-',ins[1], ';', file=f)
+                elif str(e.primitive) == 'div':
+                    print(outs[0], '=', ins[0], '/', ins[1], ';', file=f)
+                elif str(e.primitive) == 'log':
+                    print(outs[0], '= log(', ins[0], ');', file=f)
+                elif str(e.primitive) == 'sqrt':
+                    print(outs[0], '= sqrt(', ins[0], ');', file=f)
+                elif str(e.primitive) == 'exp':
+                    print(outs[0], '= exp(', ins[0], ');', file=f)
+                elif str(e.primitive) == 'log1p':
+                    print(outs[0], '= log(1+', ins[0], ');', file=f)
+                elif str(e.primitive) == 'integer_pow':
+                    print(outs[0], '= pow(', ins[0],',', e.params['y'], ');', file=f)
+                elif str(e.primitive) == 'reduce_sum':
+                    if e.invars[0].aval.size<=1:
+                        print(outs[0], '= ', ins[0], ';', file=f)
+                    else:
+                        print(outs[0], '= sum(', ins[0],');', file=f)
+                elif str(e.primitive) == 'neg':
+                    print(outs[0], '= -', ins[0], ';', file=f)
+                elif str(e.primitive) == 'concatenate':
+                    print(outs[0], '= append_row(', ins[0],',', ins[1], ');', file=f)
+                elif str(e.primitive) in ['reshape', 'convert_element_type', 'broadcast_in_dim']:
+                    print(outs[0], '= ', ins[0], ';', file=f)
+                elif str(e.primitive) == 'gather':
+                    print(outs[0], '= ', ins[0], '[',ins[1],'];', file=f)
+                else:
+                    print(e.primitive, e.invars, e.outvars, e.params, e.outvars[0].aval)
+            print('target +=', _filter(str(jpr.eqns[-1].outvars[0])),';',file=f)
+            print("}",file=f)
         jpr2 = make_jaxpr(grad(log_prob))(jnp.zeros(latent_dims))
         print('Size of the Jaxprs of grad(log_prob)', len(jpr2.eqns))
         time2 = time()
@@ -37,6 +106,7 @@ def marginalized_hmc(model, model_parameters, warm_up_steps, sample_steps, resul
             result_file += '_no_marginalization'
         with open(result_file+'_compile','w') as f:
             print(len(jpr.eqns), len(jpr2.eqns), time3-time2, file=f)
+
     else:
         time2 = time()
 

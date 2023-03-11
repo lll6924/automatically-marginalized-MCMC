@@ -1,0 +1,139 @@
+
+    functions {
+        real to_real(int x) { 
+            return x; 
+        }
+    }
+    data {
+      vector[8] a;
+      vector[8] b;         
+    }
+    parameters {
+      vector[2] c;           
+    }    
+    model {
+        
+vector[ 10 ] d ;
+int e ;
+real f ;
+real g ;
+int h ;
+real i ;
+real j ;
+real k ;
+real l ;
+real m ;
+int n ;
+vector[ 8 ] o ;
+real p ;
+real q ;
+real r ;
+real s ;
+real t ;
+real u ;
+real v ;
+real w ;
+real x ;
+real y ;
+real z ;
+real ba ;
+real bb ;
+real bc ;
+real bd ;
+real be ;
+real bf ;
+real bg ;
+real bh ;
+real bi ;
+real bj ;
+real bk ;
+real bl ;
+real bm ;
+real bn ;
+real bo ;
+real bp ;
+real bq ;
+real br ;
+real bs ;
+
+vector[ 8 ] bt ;
+vector[ 8 ] bu ;
+vector[ 8 ] bv ;
+real bw ;
+real bx ;
+real by ;
+vector[ 8 ] bz ;
+vector[ 8 ] ca ;
+vector[ 8 ] cb ;
+vector[ 8 ] cc ;
+vector[ 8 ] cd ;
+vector[ 8 ] ce ;
+vector[ 8 ] cf ;
+real cg ;
+real ch ;
+real ci ;
+d = append_row( c , a );
+e =  1 ;
+f =  d [ e ];
+g =  f ;
+h =  2 ;
+i =  d [ h ];
+j =  i ;
+k = 0.0 + j ;
+l = exp( i );
+m =  l ;
+n =  2 ;
+o =  a;
+p = sqrt( 6.283185307179586 );
+q =  p ;
+r = q * 5.0 ;
+s = log( r );
+t = g - 0.0 ;
+u = t / 5.0 ;
+v = pow( u ,to_real( 2 ));
+w = -0.5 * v ;
+x = w - s ;
+y =  x ;
+z = 0.0 + y ;
+ba = log( 3.141592653589793 );
+bb = - ba ;
+bc = log( 5.0 );
+bd =  bb ;
+be = bd - bc ;
+bf = m - 0.0 ;
+bg = bf / 5.0 ;
+bh = pow( bg ,to_real( 2 ));
+bi = log(1+ bh );
+bj = be - bi ;
+bk = log( 2.0 );
+bl =  bk ;
+bm = bj + bl ;
+bn =  bm ;
+bo = z + bn ;
+bp = 1.0 * g ;
+bq = bp + 0.0 ;
+br = 1.0 * m ;
+bs = pow( br ,to_real( 2 ));
+for (index in 1:8) {
+  bt[index] =pow( b[index] ,2);
+}
+bu = bs + bt ;
+bv = sqrt( bu );
+bw =  bq ;
+bx = sqrt( 6.283185307179586 );
+by =  bx ;
+bz = by * bv ;
+ca = log( bz );
+cb = o - bw ;
+for (index in 1:8){
+    cc[index] = cb[index] / bv[index];
+cd[index] = pow( cc[index] ,to_real( 2 ));
+ce[index] = -0.5 * cd[index] ;
+cf[index] = ce [index]- ca[index] ;
+}
+
+cg = sum( cf );
+ch = bo + cg ;
+ci = ch + k ;
+target += ci;
+}
