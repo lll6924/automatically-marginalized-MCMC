@@ -11,3 +11,4 @@ from .hierarchical_partial_pooling import *
 from .pulmonary_fibrosis import *
 from .pulmonary_fibrosis_vectorized import *
 from .pulmonary_fibrosis_reparameterized import *
+from .baseball_m import *
